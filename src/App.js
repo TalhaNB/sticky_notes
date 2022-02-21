@@ -1,30 +1,30 @@
 import NotesList from "./components/NotesList"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { nanoid } from "nanoid"
+import Search from "./components/Search"
+import Header from "./components/Header"
 
 const App = () => {
+  const [searchText, setSearchText] = useState("")
+  const [darkMode, setDarkMode] = useState(false)
   const [notes, setNotes] = useState([
     {
       id: nanoid(),
-      text: "this is the note body",
+      text: "Add your own notes",
       date: "Feb 15, 2021",
     },
-    {
-      id: nanoid(),
-      text: "this is the Second note body",
-      date: "Feb 16, 2021",
-    },
-    {
-      id: nanoid(),
-      text: "this is the Third note body",
-      date: "Feb 17, 2021",
-    },
-    {
-      id: nanoid(),
-      text: "One more note",
-      date: "Feb 17, 2021",
-    },
   ])
+
+  useEffect(() => {
+    const savedNotes = JSON.parse(localStorage.getItem("react-notes-app-data"))
+    if (savedNotes) {
+      setNotes(savedNotes)
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("react-notes-app-data", JSON.stringify(notes))
+  }, [notes])
 
   const addNotes = (text) => {
     const date = new Date()
@@ -36,18 +36,25 @@ const App = () => {
     const newNotes = [...notes, newNote]
     setNotes(newNotes)
   }
+
   const deleteNote = (id) => {
     const newNotes = notes.filter((note) => note.id !== id)
     setNotes(newNotes)
   }
 
   return (
-    <div className="container">
-      <NotesList
-        notes={notes}
-        handleSaveClick={addNotes}
-        handleDelete={deleteNote}
-      />
+    <div className={darkMode ? "dark-mode" : ""}>
+      <div className="container">
+        <Header handleToggleDarkMode={setDarkMode} />
+        <Search handleSearching={setSearchText} />
+        <NotesList
+          notes={notes.filter((note) =>
+            note.text.toLowerCase().includes(searchText)
+          )}
+          handleSaveClick={addNotes}
+          handleDelete={deleteNote}
+        />
+      </div>
     </div>
   )
 }
